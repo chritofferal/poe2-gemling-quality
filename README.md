@@ -22,6 +22,8 @@ It's a single self-contained HTML file — no build step, no dependencies, no ne
 
 ## Data & attribution
 
+The quality data comes from the "Gemling Quality spreadsheet" shared by [u/Torash on r/PathOfExile2](https://www.reddit.com/r/PathOfExile2/comments/1trbio7/gemling_quality_spreadsheet/), which links a community Google Sheet. The original author is unconfirmed — per the post, the data surfaced while watching Kripp. This page is a reformatted, searchable view of that data.
+
 Unofficial fan-made reference. *Path of Exile 2* and all related game data are the property of [Grinding Gear Games](https://www.grindinggear.com/). This project is not affiliated with or endorsed by GGG. Values reflect game version 0.5 and may go out of date as the game is patched.
 
 ## License

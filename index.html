@@ -71,6 +71,9 @@ tr.nofx td{color:var(--faint)}
 ::selection{background:#d6d6d6}
 .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7e7e7}
+.cred{margin-top:22px;padding-top:12px;border-top:1px solid var(--line2);font-size:11px;color:var(--faint);line-height:1.6}
+.cred a{color:var(--dim);text-decoration:underline}
+.cred a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -103,6 +106,10 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
     <tbody id="body"></tbody>
   </table>
   <div class="empty" id="empty" style="display:none">no matches</div>
+
+  <footer class="cred">
+    Data from the &ldquo;Gemling Quality spreadsheet&rdquo; shared by <a href="https://www.reddit.com/r/PathOfExile2/comments/1trbio7/gemling_quality_spreadsheet/" target="_blank" rel="noopener noreferrer">u/Torash on r/PathOfExile2</a>, which links a community Google Sheet. Original author unconfirmed &mdash; per the post, the data surfaced while watching Kripp. Unofficial fan reference; <em>Path of Exile 2</em> data is the property of Grinding Gear Games.
+  </footer>
 </div>
 
 <script>
