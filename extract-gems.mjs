@@ -30,6 +30,13 @@ const lua = fs.readFileSync(`${POB}/Gems.lua`, 'utf8');
 const blocks = lua.split('["Metadata/Items/Gems/').slice(1);
 const get = (b, re) => { const m = b.match(re); return m ? m[1] : ''; };
 const num = (b, re) => { const m = b.match(re); return m ? +m[1] : 0; };
+// PoB's gem attribute-requirement formula (CalcTools.getGemStatRequirement).
+// reqStr/reqDex/reqInt in Gems.lua are 0-100 weightings, NOT requirements; this converts to the real stat requirement.
+const getReq = (level, multi, isSupport) => {
+  if (multi === 0 || isSupport) return 0;
+  const req = Math.round((5 + (level - 3) * 1.7) * Math.pow(multi / 100, 0.9)) + 4;
+  return req < 8 ? 0 : req;
+};
 
 const seen = new Set();
 const gems = [];
@@ -46,23 +53,24 @@ for (const b of blocks) {
   const maxLevel = num(b, /\bnaturalMaxLevel = (\d+)/) || 20;
   const e = effect[gid] || {};
 
-  // level requirement at the gem's natural max level
+  // character level requirement at the gem's natural max level (levelRequirement, not actorLevel)
   let levelReq = 0;
-  const ladder = (e.al && e.al.length) ? e.al : (e.lr && e.lr.length ? e.lr : []);
+  const ladder = (e.lr && e.lr.length) ? e.lr : (e.al && e.al.length ? e.al : []);
   if (ladder.length) levelReq = Math.round(ladder[Math.min(maxLevel, ladder.length) - 1]);
+  const isSupport = gemType === 'Support';
 
   // sub-parts: additional stat-set variants/forms of the same skill (e.g. "Ice Nova on Frostbolt")
   const subParts = (e.labels || []).filter(l => l && l !== name && l !== get(b, /\bbaseTypeName = "([^"]*)"/));
 
   gems.push({
     name,
-    support: gemType === 'Support',
+    support: isSupport,
     gemType,
     tags: get(b, /\btagString = "([^"]*)"/),
     weapon: get(b, /\bweaponRequirements = "([^"]*)"/),
-    str: num(b, /\breqStr = (\d+)/),
-    dex: num(b, /\breqDex = (\d+)/),
-    int: num(b, /\breqInt = (\d+)/),
+    str: getReq(levelReq, num(b, /\breqStr = (\d+)/), isSupport),
+    dex: getReq(levelReq, num(b, /\breqDex = (\d+)/), isSupport),
+    int: getReq(levelReq, num(b, /\breqInt = (\d+)/), isSupport),
     tier: num(b, /\bTier = (\d+)/),
     maxLevel,
     levelReq,
