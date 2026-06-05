@@ -7,7 +7,17 @@ import fs from 'fs';
 const POB = 'C:/Users/chris/Desktop/PathOfBuilding-PoE2-dev/src/Data';
 const SKILL_FILES = ['act_str','act_dex','act_int','sup_str','sup_dex','sup_int','other','minion','spectre'];
 
-// ---- 1) granted-effect map: id -> { desc, actorLevels[], levelReqs[] } ----
+// Brace-matched qualityStats parser (NORMAL quality). A naive index-of parser over-captures constantStats.
+const qstats = (p) => {
+  const qi = p.indexOf('qualityStats = {'); if (qi < 0) return [];
+  let i = p.indexOf('{', qi), depth = 0; const start = i;
+  for (; i < p.length; i++) { if (p[i] === '{') depth++; else if (p[i] === '}') { depth--; if (depth === 0) { i++; break; } } }
+  return [...p.slice(start, i).matchAll(/\{ "([^"]+)", ([\-\d.]+) \}/g)].map(m => [m[1], +m[2]]);
+};
+// placeholder / internal stats that are not real player-facing quality
+const TECH = /^(dummy_stat_display_nothing|display_.+|.+_override(_ms)?|skill_desired_amount.*)$/;
+
+// ---- 1) granted-effect map: id -> { desc, actorLevels[], levelReqs[], qualityStats[] } ----
 const effect = {};
 for (const f of SKILL_FILES) {
   const txt = fs.readFileSync(`${POB}/Skills/${f}.lua`, 'utf8');
@@ -21,7 +31,7 @@ for (const f of SKILL_FILES) {
     const al = [...p.matchAll(/actorLevel = ([\d.]+)/g)].map(m => +m[1]);
     const lr = [...p.matchAll(/levelRequirement = (\d+)/g)].map(m => +m[1]);
     const labels = [...new Set([...p.matchAll(/\blabel = "([^"]*)"/g)].map(m => m[1]))];
-    effect[key] = { name: nm ? nm[1] : '', desc: dm ? dm[1] : '', al, lr, labels };
+    effect[key] = { name: nm ? nm[1] : '', desc: dm ? dm[1] : '', al, lr, labels, q: qstats(p) };
   }
 }
 
@@ -36,6 +46,28 @@ const getReq = (level, multi, isSupport) => {
   if (multi === 0 || isSupport) return 0;
   const req = Math.round((5 + (level - 3) * 1.7) * Math.pow(multi / 100, 0.9)) + 4;
   return req < 8 ? 0 : req;
+};
+
+// NORMAL quality from PoB qualityStats: first non-technical entry, value at 20% quality = perQ * 20, humanized.
+const humanizeNormal = (stat, v) => {
+  const isPct = /\+%|_%$|chance_%|resistance_%|efficiency_\+%/.test(stat) || stat.includes('_+%');
+  const isMs = /_ms$/.test(stat);
+  let label = stat
+    .replace(/_\+%_final$/, '').replace(/_\+%$/, '').replace(/_%$/, '').replace(/_final$/, '').replace(/_ms$/, '')
+    .replace(/^active_skill_/, '').replace(/^base_/, '').replace(/^skill_/, '').replace(/^gem_quality_/, '')
+    .replace(/_/g, ' ').trim();
+  label = label.charAt(0).toUpperCase() + label.slice(1);
+  const n = +v.toFixed(2);
+  const valStr = isMs ? `${n}ms` : isPct ? `${n > 0 ? '+' : ''}${n}%` : String(n);
+  return `${label} ${valStr}`;
+};
+const normalOf = (q) => {
+  for (const [stat, perQ] of (q || [])) {
+    if (TECH.test(stat)) continue;
+    const v = perQ * 20;
+    return { nStat: stat, nPerQ: perQ, nVal: +v.toFixed(2), nText: humanizeNormal(stat, v) };
+  }
+  return null;
 };
 
 const seen = new Set();
@@ -61,6 +93,7 @@ for (const b of blocks) {
 
   // sub-parts: additional stat-set variants/forms of the same skill (e.g. "Ice Nova on Frostbolt")
   const subParts = (e.labels || []).filter(l => l && l !== name && l !== get(b, /\bbaseTypeName = "([^"]*)"/));
+  const n = normalOf(e.q);
 
   gems.push({
     name,
@@ -76,15 +109,20 @@ for (const b of blocks) {
     levelReq,
     desc: e.desc || '',
     subParts,
+    nStat: n ? n.nStat : '', nPerQ: n ? n.nPerQ : 0, nVal: n ? n.nVal : 0, nText: n ? n.nText : '',
     id: gid,
   });
 }
 
 fs.writeFileSync(`${process.cwd()}/gems-data.json`, JSON.stringify(gems));
 console.log('gems:', gems.length, '| skills:', gems.filter(g=>!g.support).length, '| supports:', gems.filter(g=>g.support).length);
-console.log('with description:', gems.filter(g=>g.desc).length, '| with sub-parts:', gems.filter(g=>g.subParts.length).length, '| with levelReq>0:', gems.filter(g=>g.levelReq>0).length);
+console.log('with description:', gems.filter(g=>g.desc).length, '| with sub-parts:', gems.filter(g=>g.subParts.length).length,
+  '| with levelReq>0:', gems.filter(g=>g.levelReq>0).length, '| with normal quality:', gems.filter(g=>g.nStat).length);
 const h = gems.find(g=>g.name==='Hammer of the Gods');
-console.log('SAMPLE HotG:', JSON.stringify({name:h.name,str:h.str,dex:h.dex,int:h.int,tier:h.tier,maxLevel:h.maxLevel,levelReq:h.levelReq,desc:h.desc.slice(0,70)+'...'}));
+console.log('SAMPLE HotG:', JSON.stringify({name:h.name,str:h.str,levelReq:h.levelReq,nStat:h.nStat,nVal:h.nVal,nText:h.nText}));
+for (const nm of ['Arc','Boneshatter','Load Explosive Shot','Comet','Spark']) {
+  const g = gems.find(x=>x.name===nm); console.log('  normal:', nm, '->', g ? (g.nText || '(none)') : 'NF');
+}
 const subs = gems.filter(g=>g.subParts.length);
 if (subs.length) subs.slice(0,4).forEach(s=>console.log('  sub-parts:', s.name, '->', s.subParts.join(' | ')));
 else console.log('no sub-parts captured');

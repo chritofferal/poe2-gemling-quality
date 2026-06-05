@@ -119,7 +119,7 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
 <body>
 <div class="wrap">
   <h1>PoE2 &mdash; Skill &amp; Support Gems</h1>
-  <div class="sub">0.5 &middot; every gem with tags, requirements &amp; Gemling vs. normal quality &middot; click a gem to open its full details &middot; click tags to filter (combine several) &middot; quality values shown at 20% quality</div>
+  <div class="sub">0.5 &middot; every gem with tags, requirements &amp; Gemling vs. normal quality &middot; click a gem to open its full details &middot; click tags to filter (combine several) &middot; normal quality shown at 20% gem quality</div>
 
   <div class="bar">
     <input id="q" type="text" placeholder="search gem / tag / description / stat..." aria-label="Search gems, tags, descriptions, or stats">
@@ -166,7 +166,7 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
   <div class="empty" id="empty" style="display:none">no matches</div>
 
   <footer class="cred">
-    Gem list, descriptions, tags, requirements &amp; weapon types from <a href="https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2" target="_blank" rel="noopener noreferrer">Path of Building (PoE2)</a>. Gemling vs. normal quality from the &ldquo;Gemling Quality spreadsheet&rdquo; shared by <a href="https://www.reddit.com/r/PathOfExile2/comments/1trbio7/gemling_quality_spreadsheet/" target="_blank" rel="noopener noreferrer">u/Torash on r/PathOfExile2</a>, validated against poe2db. Quality values shown at 20% quality. Unofficial fan reference; <em>Path of Exile 2</em> data is the property of Grinding Gear Games.
+    Gem list, descriptions, tags, requirements, weapon types &amp; normal quality from <a href="https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2" target="_blank" rel="noopener noreferrer">Path of Building (PoE2)</a>. Gemling (Advanced Thaumaturgy) quality from <a href="https://poe2db.tw/us/Advanced_Thaumaturgy" target="_blank" rel="noopener noreferrer">poe2db</a>. Normal quality shown at 20% gem quality. Unofficial fan reference; <em>Path of Exile 2</em> data is the property of Grinding Gear Games.
   </footer>
 </div>
 
@@ -177,41 +177,16 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
 <script>
 const DATA=/*__DATA__*/[];
 
-/* ---------- humanize raw stat strings (values shown at 20% quality = raw / 50) ---------- */
-function pretty(stat,val){
-  let s=stat.trim();
-  if(!s) return null;
-  const rawNums=(val||'').split('|').map(x=>x.trim());
-  const isPct = /\+%|_%|%_|resistance_%|chance_%|efficiency_\+%/.test(s) || /_\+%(_final)?$/.test(s) || s.includes('_+%');
-  const isMs = /_ms$/.test(s);
-  function fmtNum(n,pct){
-    if(n==='') return '';
-    const num=Number(n); if(Number.isNaN(num)) return n;
-    const scaled=num/50;
-    if(isMs) return scaled.toLocaleString(undefined,{maximumFractionDigits:2})+'ms';
-    if(pct) return (scaled>0?'+':'')+scaled.toLocaleString(undefined,{maximumFractionDigits:2})+'%';
-    return scaled.toLocaleString(undefined,{maximumFractionDigits:2});
-  }
-  let label=s
-    .replace(/_\+%_final$/,'').replace(/_\+%$/,'').replace(/_%$/,'').replace(/_final$/,'').replace(/_ms$/,'')
-    .replace(/^active_skill_/,'').replace(/^base_/,'').replace(/^skill_/,'').replace(/^gem_quality_/,'')
-    .replace(/_/g,' ').trim();
-  label=label.charAt(0).toUpperCase()+label.slice(1);
-  return {label, valStr:fmtNum(rawNums[0],isPct), isPct};
+/* ---------- quality renderers: Gemling = poe2db text verbatim; Normal = PoB text + raw-id toggle ---------- */
+function qGem(d){
+  return d.gText ? `<span class="eff">${esc(d.gText)}</span>` : '<span class="dash">&mdash;</span>';
 }
-function effHtml(stats,vals,showRaw){
-  if(!stats || !stats.trim()) return '<span class="dash">&mdash;</span>';
-  const sArr=stats.split('|').map(x=>x.trim()).filter(Boolean);
-  const vArr=(vals||'').split('|').map(x=>x.trim());
-  const first=pretty(sArr[0],vArr[0]||'');
-  let html=`<span class="eff">${first.label} <span class="val">${first.valStr}</span>`;
-  if(sArr.length>1){
-    const extras=sArr.slice(1).map((s,i)=>{const p=pretty(s,vArr[i+1]||'');return p.label+' '+p.valStr;}).join(' · ');
-    html+=`<span class="more">+ ${extras}</span>`;
-  }
-  if(showRaw) html+=`<span class="raw">${stats} = ${vals}</span>`;
-  html+='</span>';
-  return html;
+function qNorm(d,forceRaw){
+  if(!d.nText) return '<span class="dash">&mdash;</span>';
+  let h=`<span class="eff">${esc(d.nText)}`;
+  if((forceRaw||st.raw)&&d.nStat) h+=`<span class="raw">${esc(d.nStat)} = ${d.nVal}</span>`;
+  h+='</span>';
+  return h;
 }
 
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -255,8 +230,8 @@ function modalHtml(d){
   if(d.maxLevel) rows.push(['Max gem level', String(d.maxLevel)]);
   rows.push(['Weapon', (d.weapon&&d.weapon!=='Any / no weapon req')?d.weapon:'Any / none']);
   h+='<div class="m-grid">'+rows.map(r=>`<div class="m-row"><span class="m-k">${r[0]}</span><span class="m-v">${esc(r[1])}</span></div>`).join('')+'</div>';
-  h+=`<div class="m-q"><div class="m-q-col"><div class="m-q-h">Gemling Quality Effect</div>${effHtml(d.gStat,d.gVal,true)}</div>`+
-     `<div class="m-q-col"><div class="m-q-h">Normal Quality Effect</div>${effHtml(d.nStat,d.nVal,true)}</div></div>`;
+  h+=`<div class="m-q"><div class="m-q-col"><div class="m-q-h">Gemling Quality Effect</div>${qGem(d)}</div>`+
+     `<div class="m-q-col"><div class="m-q-h">Normal Quality Effect</div>${qNorm(d,true)}</div></div>`;
   return h;
 }
 function openModal(d){
@@ -300,7 +275,7 @@ function ok(d){
     if(st.weapon==='Any / no weapon req'){if(d.weapon!=='Any / no weapon req')return false;}
     else if(!d.weapon.split(',').map(w=>w.trim()).includes(st.weapon))return false;
   }
-  if(st.q){const t=(d.name+' '+d.tags+' '+(d.desc||'')+' '+d.gStat+' '+d.nStat).toLowerCase();
+  if(st.q){const t=(d.name+' '+d.tags+' '+(d.desc||'')+' '+(d.gText||'')+' '+(d.nText||'')).toLowerCase();
     if(!t.includes(st.q.toLowerCase()))return false;}
   return true;
 }
@@ -312,8 +287,8 @@ function render(){
     if(st.sort==='type') return dir*((a.support-b.support))|| a.name.localeCompare(b.name);
     if(st.sort==='level') return dir*((a.levelReq||0)-(b.levelReq||0))|| a.name.localeCompare(b.name);
     if(st.sort==='weapon') return dir*(a.weapon.localeCompare(b.weapon))|| a.name.localeCompare(b.name);
-    if(st.sort==='g') return dir*((b.gStat||'').localeCompare(a.gStat||''))|| a.name.localeCompare(b.name);
-    if(st.sort==='n') return dir*((b.nStat||'').localeCompare(a.nStat||''))|| a.name.localeCompare(b.name);
+    if(st.sort==='g') return dir*((b.gText||'').localeCompare(a.gText||''))|| a.name.localeCompare(b.name);
+    if(st.sort==='n') return dir*((b.nText||'').localeCompare(a.nText||''))|| a.name.localeCompare(b.name);
     if(st.sort==='fx') return dir*((b.gemling-a.gemling))|| a.name.localeCompare(b.name);
     return 0;
   });
@@ -324,8 +299,8 @@ function render(){
     <td class="tagcell">${tagsHtml(d)}</td>
     <td class="reqs colhide">${reqsHtml(d)}</td>
     <td class="wep colhide">${wepShort(d.weapon)}</td>
-    <td class="eff">${effHtml(d.gStat,d.gVal,st.raw)}</td>
-    <td class="eff colhide">${effHtml(d.nStat,d.nVal,st.raw)}</td>
+    <td class="eff">${qGem(d)}</td>
+    <td class="eff colhide">${qNorm(d)}</td>
   </tr>`).join('');
   empty.style.display=list.length?'none':'block';
 }

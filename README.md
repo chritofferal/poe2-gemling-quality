@@ -17,21 +17,22 @@ A searchable, filterable build-planning reference of every **Path of Exile 2 (0.
 
 ## Data & sources
 
-- **Gem list, descriptions, tags, requirements & weapon types:** extracted from [Path of Building (PoE2)](https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2) (`Gems.lua` + skill data), patch 0.5.
-- **Gemling vs. normal quality:** the "Gemling Quality spreadsheet" shared by [u/Torash on r/PathOfExile2](https://www.reddit.com/r/PathOfExile2/comments/1trbio7/gemling_quality_spreadsheet/), validated against poe2db.
+- **Gem list, descriptions, tags, requirements, weapon types & normal quality:** extracted from [Path of Building (PoE2)](https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2) (`Gems.lua` + skill data), patch 0.5.
+- **Gemling (Advanced Thaumaturgy) quality:** scraped from [poe2db](https://poe2db.tw/us/Advanced_Thaumaturgy) — the only authoritative source, since PoB does not store the Gemling alt-quality. Used verbatim, so units match in-game exactly.
 
-> **Quality values are shown at 20% quality** (the in-game / poe2db convention). The stat names and raw values are faithful to the game source; toggle "show raw stat IDs" to see them.
+> **Normal quality is shown at 20% gem quality** (PoB `qualityStats` × 20); toggle "show raw stat IDs" to see the underlying stat + value. Gemling quality shows poe2db's range (0 → value at 20% quality).
 
 ## Rebuilding
 
 ```
-node extract-gems.mjs   # parse a local Path of Building checkout -> gems-data.json (needs PoB)
-node build.mjs          # merge gems-data.json + quality-data.json -> index.html
+node extract-gems.mjs          # parse a local PoB checkout -> gems-data.json (metadata + normal quality)
+node parse-poe2db-gemling.mjs  # parse cached poe2db page -> poe2db-gemling.json (Gemling quality)
+node build.mjs                 # merge the two -> index.html
 ```
 
-- `extract-gems.mjs` — pulls the full gem data from Path of Building (set the `POB` path at the top)
-- `gems-data.json` — vendored gem snapshot (so the page rebuilds without a PoB checkout)
-- `quality-data.json` — verified Gemling / normal quality
+- `extract-gems.mjs` — gem metadata + normal quality from Path of Building (set the `POB` path at top)
+- `parse-poe2db-gemling.mjs` — parses `raw/advanced_thaumaturgy.html` (refresh via curl) into Gemling text
+- `gems-data.json` / `poe2db-gemling.json` — vendored snapshots (page rebuilds without re-fetching)
 - `template.html` — page shell; `build.mjs` injects the merged data
 
 ## Attribution & license
