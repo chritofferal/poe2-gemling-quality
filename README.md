@@ -7,7 +7,7 @@ A searchable, filterable build-planning reference of every **Path of Exile 2 (0.
 ## Features
 
 - **All 895 gems** — 339 active skills + 556 supports
-- **Full descriptions** — click any gem to expand its in-game description, its sub-parts (e.g. *Volatile Dead → Explosion · Core*), and a requirements summary. "Expand all" shows every description at once.
+- **Full-details modal** — click any gem to open a popup with its full in-game description, sub-parts (e.g. *Volatile Dead → Explosion · Core*), a requirements grid (level, attributes, tier, max level, weapon), and both quality effects with raw stat IDs.
 - **Requirements** — character level, Str/Dex/Int (color-coded), gem tier, and max gem level
 - **Tags** on every gem — click chips to filter; **combine multiple tags** with a match-all / match-any toggle
 - **Filter** by type (skills / supports), tags, or weapon; **search** across names, tags, descriptions, and stats

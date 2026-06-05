@@ -55,10 +55,8 @@ th{background:var(--hl);font-weight:700;font-size:11px;letter-spacing:.04em;text
 th:hover{background:#e7e7e7}
 th .arw{color:var(--faint);font-weight:400}
 th.act .arw{color:var(--ink)}
-tbody tr.gemrow:hover{background:#f6f6f6}
+tbody tr:hover{background:#f6f6f6}
 .gem{font-weight:700;white-space:nowrap;cursor:pointer}
-.gem .car{color:var(--faint);font-weight:400;margin-right:3px}
-.gemrow.open .gem .car{color:var(--ink)}
 .gem:hover{text-decoration:underline}
 .wep{font-size:11px;color:var(--dim);white-space:nowrap}
 .reqs{font-size:11px;white-space:nowrap}
@@ -77,22 +75,42 @@ tbody tr.gemrow:hover{background:#f6f6f6}
   padding:1px 6px;background:#fff;cursor:pointer;white-space:nowrap;letter-spacing:.02em}
 .tag:hover{border-color:var(--ink);color:var(--ink);background:var(--hl)}
 .tag.on{border-color:var(--ink);background:var(--ink);color:#fff}
-.det td{background:#f5f5f5}
-.det .desc{font-size:12.5px;line-height:1.55;max-width:920px;color:#2a2a2a}
-.det .parts{font-size:11px;color:var(--dim);margin-top:7px}
-.det .parts b{color:var(--ink)}
-.det .meta{font-size:11px;color:var(--faint);margin-top:7px;
-  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 .dash{color:var(--faint)}
 .empty{padding:40px;text-align:center;color:var(--faint);border:1px solid var(--line);border-top:none;background:#fff}
 .cred{margin-top:22px;padding-top:12px;border-top:1px solid var(--line2);font-size:11px;color:var(--faint);line-height:1.6}
 .cred a{color:var(--dim);text-decoration:underline}
 .cred a:hover{color:var(--ink)}
+
+/* modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(20,20,20,.5);z-index:50;padding:34px 16px;overflow-y:auto}
+.modal.show{display:block}
+.m-box{max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--ink);box-shadow:0 10px 44px rgba(0,0,0,.28)}
+.m-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;
+  border-bottom:2px solid var(--ink);position:sticky;top:0;background:#fff}
+.m-head h2{font-size:16px;font-weight:700}
+.m-close{font:inherit;font-size:24px;line-height:1;background:none;border:none;cursor:pointer;color:var(--dim);padding:0 4px}
+.m-close:hover{color:var(--ink)}
+.m-close:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.m-tags{padding:13px 18px 0}
+.m-desc{padding:13px 18px;font-size:13px;line-height:1.6;color:#222}
+.m-parts{padding:0 18px 13px;font-size:12px;color:var(--dim)}
+.m-parts b{color:var(--ink)}
+.m-grid{margin:0 18px 16px;border:1px solid var(--line2)}
+.m-row{display:flex;border-bottom:1px solid var(--line2);font-size:12px}
+.m-row:last-child{border-bottom:none}
+.m-k{width:140px;padding:6px 11px;background:var(--hl);color:var(--dim);flex-shrink:0;text-transform:uppercase;letter-spacing:.04em;font-size:10px;display:flex;align-items:center}
+.m-v{padding:6px 11px}
+.m-q{display:flex;border:1px solid var(--line2);margin:0 18px 18px}
+.m-q-col{flex:1;padding:12px 14px;min-width:0}
+.m-q-col+.m-q-col{border-left:1px solid var(--line2)}
+.m-q-h{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);margin-bottom:7px}
+
 @media(max-width:900px){
   body{padding:14px 10px 60px}
   th .colhide,td .colhide{display:none}
   .raw{word-break:break-word}
 }
+@media(max-width:560px){ .m-q{flex-direction:column} .m-q-col+.m-q-col{border-left:none;border-top:1px solid var(--line2)} }
 ::selection{background:#d6d6d6}
 .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7e7e7}
@@ -101,7 +119,7 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
 <body>
 <div class="wrap">
   <h1>PoE2 &mdash; Skill &amp; Support Gems</h1>
-  <div class="sub">0.5 &middot; every gem with tags, requirements &amp; Gemling vs. normal quality &middot; click a gem for its full description &middot; click tags to filter (combine several) &middot; quality values shown at 20% quality</div>
+  <div class="sub">0.5 &middot; every gem with tags, requirements &amp; Gemling vs. normal quality &middot; click a gem to open its full details &middot; click tags to filter (combine several) &middot; quality values shown at 20% quality</div>
 
   <div class="bar">
     <input id="q" type="text" placeholder="search gem / tag / description / stat..." aria-label="Search gems, tags, descriptions, or stats">
@@ -125,7 +143,6 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
       <option value="weapon">sort: weapon</option>
       <option value="fx">sort: has gemling effect</option>
     </select>
-    <label class="chk" id="expL"><input type="checkbox" id="exp"> expand all</label>
     <label class="chk" id="fxL"><input type="checkbox" id="fx"> only distinct gemling effect</label>
     <label class="chk" id="rawL"><input type="checkbox" id="raw"> show raw stat ids</label>
   </div>
@@ -135,7 +152,7 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
   <div class="count"><b id="shown">0</b> / <b id="total">0</b> gems &nbsp;|&nbsp; <span id="brk"></span></div>
 
   <table>
-    <caption class="vh">Path of Exile 2 skill and support gems with descriptions, tags, requirements, and quality effects — sortable and filterable</caption>
+    <caption class="vh">Path of Exile 2 skill and support gems with tags, requirements, and quality effects — sortable and filterable; click a gem for full details</caption>
     <thead><tr>
       <th data-k="name" scope="col" tabindex="0" aria-sort="ascending">Gem <span class="arw">&#9650;</span></th>
       <th data-k="tags" scope="col" tabindex="0">Tags <span class="arw"></span></th>
@@ -151,6 +168,10 @@ th:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;background:#e7
   <footer class="cred">
     Gem list, descriptions, tags, requirements &amp; weapon types from <a href="https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2" target="_blank" rel="noopener noreferrer">Path of Building (PoE2)</a>. Gemling vs. normal quality from the &ldquo;Gemling Quality spreadsheet&rdquo; shared by <a href="https://www.reddit.com/r/PathOfExile2/comments/1trbio7/gemling_quality_spreadsheet/" target="_blank" rel="noopener noreferrer">u/Torash on r/PathOfExile2</a>, validated against poe2db. Quality values shown at 20% quality. Unofficial fan reference; <em>Path of Exile 2</em> data is the property of Grinding Gear Games.
   </footer>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="m-box"><div id="mBody"></div></div>
 </div>
 
 <script>
@@ -214,22 +235,43 @@ function attrHtml(d){
 }
 function reqsHtml(d){
   const lvl=d.levelReq?`<span class="lvl">Lv ${d.levelReq}</span>`:'';
-  const at=attrHtml(d);
-  return (lvl+at)||'<span class="dash">&mdash;</span>';
+  return (lvl+attrHtml(d))||'<span class="dash">&mdash;</span>';
 }
-function detailHtml(d){
-  let h='<div class="desc">'+(d.desc?esc(d.desc):'<span class="dash">no description</span>')+'</div>';
-  if(d.subParts&&d.subParts.length) h+='<div class="parts"><b>Parts:</b> '+d.subParts.map(esc).join(' &middot; ')+'</div>';
-  const meta=[d.support?'Support gem':'Skill gem'];
-  if(d.levelReq)meta.push('Requires level '+d.levelReq);
+
+/* ---------- modal ---------- */
+const modal=document.getElementById('modal');
+function modalHtml(d){
+  let h=`<div class="m-head"><h2 id="m-title">${esc(d.name)}${d.support?'<span class="sup">support</span>':'<span class="sup">skill</span>'}</h2>`+
+        `<button class="m-close" id="mClose" aria-label="Close">&times;</button></div>`;
+  h+=`<div class="m-tags">${tagsHtml(d)}</div>`;
+  h+=`<div class="m-desc">${d.desc?esc(d.desc):'<span class="dash">No description available.</span>'}</div>`;
+  if(d.subParts&&d.subParts.length) h+=`<div class="m-parts"><b>Parts:</b> ${d.subParts.map(esc).join(' &middot; ')}</div>`;
+  const rows=[];
+  rows.push(['Type', d.support?'Support gem':'Skill gem']);
+  if(d.levelReq) rows.push(['Level requirement', String(d.levelReq)]);
   const at=[]; if(d.str)at.push('Str '+d.str); if(d.dex)at.push('Dex '+d.dex); if(d.int)at.push('Int '+d.int);
-  if(at.length)meta.push(at.join(', '));
-  if(d.tier)meta.push('Tier '+d.tier);
-  if(d.maxLevel)meta.push('Max gem level '+d.maxLevel);
-  if(d.weapon&&d.weapon!=='Any / no weapon req')meta.push('Weapon: '+d.weapon);
-  h+='<div class="meta">'+meta.join(' &middot; ')+'</div>';
+  if(at.length) rows.push(['Attributes', at.join(' · ')]);
+  if(d.tier) rows.push(['Tier', String(d.tier)]);
+  if(d.maxLevel) rows.push(['Max gem level', String(d.maxLevel)]);
+  rows.push(['Weapon', (d.weapon&&d.weapon!=='Any / no weapon req')?d.weapon:'Any / none']);
+  h+='<div class="m-grid">'+rows.map(r=>`<div class="m-row"><span class="m-k">${r[0]}</span><span class="m-v">${esc(r[1])}</span></div>`).join('')+'</div>';
+  h+=`<div class="m-q"><div class="m-q-col"><div class="m-q-h">Gemling Quality Effect</div>${effHtml(d.gStat,d.gVal,true)}</div>`+
+     `<div class="m-q-col"><div class="m-q-h">Normal Quality Effect</div>${effHtml(d.nStat,d.nVal,true)}</div></div>`;
   return h;
 }
+function openModal(d){
+  if(!d) return;
+  document.getElementById('mBody').innerHTML=modalHtml(d);
+  modal.classList.add('show');
+  document.body.style.overflow='hidden';
+  document.getElementById('mClose').focus();
+}
+function closeModal(){ modal.classList.remove('show'); document.body.style.overflow=''; }
+modal.addEventListener('click',e=>{
+  if(e.target===modal || e.target.closest('#mClose')){closeModal();return;}
+  const tag=e.target.closest('.tag'); if(tag){toggleTag(tag.dataset.tag);closeModal();}
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&modal.classList.contains('show')) closeModal(); });
 
 /* ---------- populate filters ---------- */
 const tset=new Set(), wset=new Set();
@@ -242,8 +284,7 @@ document.getElementById('tagadd').innerHTML='<option value="">+ add tag filter</
 const wsel=document.getElementById('weapon');
 wsel.innerHTML='<option value="">all weapons</option>'+[...wset].sort().map(w=>`<option>${w}</option>`).join('');
 
-const st={q:'',type:'',tags:new Set(),tagMode:'all',weapon:'',sort:'name',dir:1,fx:false,raw:false,expand:false};
-const expanded=new Set();
+const st={q:'',type:'',tags:new Set(),tagMode:'all',weapon:'',sort:'name',dir:1,fx:false,raw:false};
 const body=document.getElementById('body'), empty=document.getElementById('empty'), tagbar=document.getElementById('tagbar');
 
 function ok(d){
@@ -278,19 +319,14 @@ function render(){
   });
   document.getElementById('shown').textContent=list.length;
   document.getElementById('total').textContent=DATA.length;
-  body.innerHTML=list.map(d=>{
-    const open=st.expand||expanded.has(d.name);
-    let row=`<tr class="gemrow${open?' open':''}" data-name="${esc(d.name)}">
-      <td class="gem"><span class="car">${open?'▾':'▸'}</span>${esc(d.name)}${d.support?'<span class="sup">sup</span>':''}</td>
-      <td class="tagcell">${tagsHtml(d)}</td>
-      <td class="reqs colhide">${reqsHtml(d)}</td>
-      <td class="wep colhide">${wepShort(d.weapon)}</td>
-      <td class="eff">${effHtml(d.gStat,d.gVal,st.raw)}</td>
-      <td class="eff colhide">${effHtml(d.nStat,d.nVal,st.raw)}</td>
-    </tr>`;
-    if(open) row+=`<tr class="det"><td colspan="6">${detailHtml(d)}</td></tr>`;
-    return row;
-  }).join('');
+  body.innerHTML=list.map(d=>`<tr data-name="${esc(d.name)}">
+    <td class="gem">${esc(d.name)}${d.support?'<span class="sup">sup</span>':''}</td>
+    <td class="tagcell">${tagsHtml(d)}</td>
+    <td class="reqs colhide">${reqsHtml(d)}</td>
+    <td class="wep colhide">${wepShort(d.weapon)}</td>
+    <td class="eff">${effHtml(d.gStat,d.gVal,st.raw)}</td>
+    <td class="eff colhide">${effHtml(d.nStat,d.nVal,st.raw)}</td>
+  </tr>`).join('');
   empty.style.display=list.length?'none':'block';
 }
 
@@ -308,10 +344,10 @@ tagbar.addEventListener('click',e=>{
   if(e.target.closest('#clearTags')){st.tags.clear();syncTagBar();render();}
 });
 
-/* ---------- row interaction: tag chips + expand ---------- */
+/* ---------- row interaction: tag chips + open modal ---------- */
 body.addEventListener('click',e=>{
   const tag=e.target.closest('.tag'); if(tag){toggleTag(tag.dataset.tag);return;}
-  const gem=e.target.closest('.gem'); if(gem){const n=gem.closest('tr').dataset.name; expanded.has(n)?expanded.delete(n):expanded.add(n); render();}
+  const gem=e.target.closest('.gem'); if(gem){const n=gem.closest('tr').dataset.name; openModal(DATA.find(x=>x.name===n));}
 });
 body.addEventListener('keydown',e=>{
   if(e.key!=='Enter'&&e.key!==' ')return;
@@ -343,8 +379,6 @@ document.getElementById('tagadd').addEventListener('change',e=>{if(e.target.valu
 document.getElementById('tagmode').addEventListener('change',e=>{st.tagMode=e.target.value;render();});
 wsel.addEventListener('change',e=>{st.weapon=e.target.value;render();});
 document.getElementById('sort').addEventListener('change',e=>{st.sort=e.target.value;st.dir=1;syncHeaders();render();});
-const exp=document.getElementById('exp'),expLb=document.getElementById('expL');
-exp.addEventListener('change',()=>{st.expand=exp.checked;expLb.classList.toggle('on',exp.checked);render();});
 const fx=document.getElementById('fx'),fxL=document.getElementById('fxL');
 fx.addEventListener('change',()=>{st.fx=fx.checked;fxL.classList.toggle('on',fx.checked);render();});
 const raw=document.getElementById('raw'),rawL=document.getElementById('rawL');
