@@ -6,18 +6,18 @@ A searchable, filterable build-planning reference of every **Path of Exile 2 (0.
 
 ## Features
 
-- **All 895 gems** — 339 active skills + 556 supports
+- **All 960 gems** — 394 active skills + 566 supports
 - **Full-details modal** — click any gem to open a popup with its full in-game description, sub-parts (e.g. *Volatile Dead → Explosion · Core*), a requirements grid (level, attributes, tier, max level, weapon), and both quality effects with raw stat IDs.
 - **Requirements** — character level, Str/Dex/Int (color-coded), gem tier, and max gem level
 - **Tags** on every gem — click chips to filter; **combine multiple tags** with a match-all / match-any toggle
 - **Filter** by type (skills / supports), tags, or weapon; **search** across names, tags, descriptions, and stats
-- **Gemling vs. normal quality** for the gems with distinct quality data (~318)
+- **Gemling vs. normal quality** for the gems with distinct quality data (~256)
 - **Sort** by name, type, level requirement, weapon, or whether the Gemling effect is distinct
 - **Show raw stat IDs** to reveal the underlying game stat identifiers
 
 ## Data & sources
 
-- **Gem list, descriptions, tags, requirements, weapon types & normal quality:** extracted from [Path of Building (PoE2)](https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2) (`Gems.lua` + skill data), patch 0.5.
+- **Gem list, descriptions, tags, requirements, weapon types & normal quality:** extracted from [Path of Building (PoE2)](https://github.com/PathOfBuildingCommunity/PathOfBuilding-PoE2) (`Gems.lua` + skill data), **PoB 0.20.0** (patch 0.5).
 - **Gemling (Advanced Thaumaturgy) quality:** scraped from [poe2db](https://poe2db.tw/us/Advanced_Thaumaturgy) — the only authoritative source, since PoB does not store the Gemling alt-quality. Used verbatim, so units match in-game exactly.
 
 > **Normal quality is shown at 20% gem quality** (PoB `qualityStats` × 20); toggle "show raw stat IDs" to see the underlying stat + value. Gemling quality shows poe2db's range (0 → value at 20% quality).

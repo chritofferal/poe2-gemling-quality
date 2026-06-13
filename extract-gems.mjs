@@ -4,7 +4,7 @@
 // Usage: node extract-gems.mjs
 import fs from 'fs';
 
-const POB = 'C:/Users/chris/Desktop/PathOfBuilding-PoE2-dev/src/Data';
+const POB = 'C:/Users/chris/poe2/vendor/pob-0.20.0/src/Data';
 const SKILL_FILES = ['act_str','act_dex','act_int','sup_str','sup_dex','sup_int','other','minion','spectre'];
 
 // Brace-matched qualityStats parser (NORMAL quality). A naive index-of parser over-captures constantStats.
